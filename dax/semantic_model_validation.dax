@@ -1,0 +1,326 @@
+// Water Safety Analytics Model
+// Semantic model and DAX measure validation
+//
+// Run this script in Microsoft Fabric DAX Query View.
+// Each EVALUATE statement returns a separate result set.
+// The queries validate the semantic model against the Gold-layer SQL results.
+//
+// Known control totals:
+//   Delivery records                 47
+//   Event groups                     34
+//   People reached                3,565
+//   Registered participants         191
+//   Registered-event attendance     171
+//   Attendance variance             -20
+//   Attendance rate               89.5%
+//   Locations reached                27
+//   Educators                          8
+//   Event-educator assignments       132
+
+
+// ================================================================
+// 01. MODEL COVERAGE AND RELATIONSHIP CHECKS
+// ================================================================
+
+// Confirms the expected dimension, fact, and bridge coverage.
+EVALUATE
+ROW(
+    "Fact Delivery Records",
+        COUNTROWS(gold_fact_event_delivery),
+
+    "Distinct Event IDs",
+        DISTINCTCOUNT(gold_fact_event_delivery[event_id]),
+
+    "Distinct Event Groups",
+        DISTINCTCOUNT(gold_fact_event_delivery[event_group_id]),
+
+    "Date Rows",
+        COUNTROWS(gold_dim_date),
+
+    "Location Rows",
+        COUNTROWS(gold_dim_location),
+
+    "Educator Rows",
+        COUNTROWS(gold_dim_educator),
+
+    "Bridge Assignments",
+        COUNTROWS(gold_bridge_event_educator),
+
+    "Distinct Staffed Event IDs",
+        DISTINCTCOUNT(gold_bridge_event_educator[event_id])
+)
+
+
+// Confirms that every fact event_id is represented in the staffing bridge.
+// Expected result: 0.
+EVALUATE
+ROW(
+    "Events Without Educators",
+        COUNTROWS(
+            EXCEPT(
+                VALUES(gold_fact_event_delivery[event_id]),
+                VALUES(gold_bridge_event_educator[event_id])
+            )
+        )
+)
+
+
+// ================================================================
+// 02. CORE KPI MEASURES — BUSINESS QUESTIONS 1 AND 2
+// ================================================================
+
+EVALUATE
+ROW(
+    "Total Delivery Records", [Total Delivery Records],
+    "Total Event Groups", [Total Event Groups],
+    "Total People Reached", [Total People Reached],
+    "Total Registered", [Total Registered],
+    "Total Attended", [Total Attended]
+)
+
+
+// ================================================================
+// 03. ATTENDANCE MEASURES — BUSINESS QUESTION 5
+// ================================================================
+
+// FORMAT is used only in this validation query so the percentage is
+// human-readable. The semantic-model measure remains numeric.
+EVALUATE
+ROW(
+    "Total Registered", [Total Registered],
+    "Registered Event Attended", [Registered Event Attended],
+    "Attendance Variance", [Attendance Variance],
+    "Attendance Rate Raw", [Attendance Rate],
+    "Attendance Rate Formatted", FORMAT([Attendance Rate], "0.0%")
+)
+
+
+// Registration-to-attendance comparison by event type.
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_fact_event_delivery[event_type],
+    "Delivery Records", [Total Delivery Records],
+    "Registered", [Total Registered],
+    "Registered Event Attended", [Registered Event Attended],
+    "Attendance Variance", [Attendance Variance],
+    "Attendance Rate", FORMAT([Attendance Rate], "0.0%")
+)
+ORDER BY
+    [Registered] DESC,
+    gold_fact_event_delivery[event_type]
+
+
+// ================================================================
+// 04. SATISFACTION MEASURES — BUSINESS QUESTION 10
+// ================================================================
+
+EVALUATE
+ROW(
+    "Average Satisfaction", [Average Satisfaction],
+    "Rated Delivery Records", [Rated Delivery Records]
+)
+
+
+// Satisfaction comparison by event type.
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_fact_event_delivery[event_type],
+    "Average Satisfaction", [Average Satisfaction],
+    "Rated Deliveries", [Rated Delivery Records]
+)
+ORDER BY
+    [Average Satisfaction] DESC,
+    gold_fact_event_delivery[event_type]
+
+
+// ================================================================
+// 05. EDUCATOR MEASURES — BUSINESS QUESTION 11
+// ================================================================
+
+// Uses the event-educator bridge rather than lead_educator_id.
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_dim_educator[educator_name],
+    "Events Delivered", [Events Delivered by Educator],
+    "Educator Hours", [Educator Hours]
+)
+ORDER BY
+    [Events Delivered] DESC,
+    gold_dim_educator[educator_name]
+
+
+// ================================================================
+// 06. TIME AND OUTREACH MEASURES
+// ================================================================
+
+EVALUATE
+ROW(
+    "Total Session Hours", [Total Session Hours],
+    "Average People Reached per Delivery", [Average People Reached per Delivery],
+    "Locations Reached", [Locations Reached]
+)
+
+
+// ================================================================
+// 07. MONTHLY TREND — BUSINESS QUESTION 3
+// ================================================================
+
+// Expected delivery records / people reached:
+//   2026-02   6 /   460
+//   2026-03   8 /   544
+//   2026-04   4 /   151
+//   2026-05  12 / 1,450
+//   2026-06  13 /   583
+//   2026-07   4 /   377
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_dim_date[year_month],
+    "Delivery Records", [Total Delivery Records],
+    "Event Groups", [Total Event Groups],
+    "People Reached", [Total People Reached],
+    "Average Reach per Delivery", [Average People Reached per Delivery],
+    "Session Hours", [Total Session Hours]
+)
+ORDER BY
+    gold_dim_date[year_month]
+
+
+// ================================================================
+// 08. REGION AND SUBURB PARTICIPATION — BUSINESS QUESTION 4
+// ================================================================
+
+// Expected people reached by region:
+//   Central Auckland  2,233
+//   South               653
+//   West                484
+//   North Shore         167
+//   East                 24
+//   North Auckland        4
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_dim_location[region],
+    "Delivery Records", [Total Delivery Records],
+    "People Reached", [Total People Reached],
+    "Average Reach per Delivery", [Average People Reached per Delivery],
+    "Locations Reached", [Locations Reached]
+)
+ORDER BY
+    [People Reached] DESC,
+    gold_dim_location[region]
+
+
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_dim_location[region],
+    gold_dim_location[suburb],
+    "Delivery Records", [Total Delivery Records],
+    "People Reached", [Total People Reached],
+    "Average Reach per Delivery", [Average People Reached per Delivery],
+    "Locations Reached", [Locations Reached]
+)
+ORDER BY
+    [People Reached] DESC,
+    gold_dim_location[region],
+    gold_dim_location[suburb]
+
+
+// ================================================================
+// 09. PROGRAMME REACH — BUSINESS QUESTION 6
+// ================================================================
+
+// Expected total people reached:
+//   Water Safety Awareness  3,314
+//   Be Water Safe              152
+//   Boating Safety              80
+//   Ambassador Training         19
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_fact_event_delivery[programme_type],
+    "Delivery Records", [Total Delivery Records],
+    "People Reached", [Total People Reached],
+    "Average Reach per Delivery", [Average People Reached per Delivery],
+    "Session Hours", [Total Session Hours]
+)
+ORDER BY
+    [People Reached] DESC,
+    gold_fact_event_delivery[programme_type]
+
+
+// ================================================================
+// 10. DELIVERY LANGUAGE — BUSINESS QUESTIONS 7 AND 8
+// ================================================================
+
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_fact_event_delivery[delivery_language],
+    "Delivery Records", [Total Delivery Records],
+    "Event Groups", [Total Event Groups],
+    "People Reached", [Total People Reached],
+    "Average Reach per Delivery", [Average People Reached per Delivery]
+)
+ORDER BY
+    [People Reached] DESC,
+    gold_fact_event_delivery[delivery_language]
+
+
+// ================================================================
+// 11. VENUE CATEGORY — BUSINESS QUESTION 9
+// ================================================================
+
+// venue_category applies the reporting-level business grouping.
+// Church and Church Hall are expected to appear as one Church category.
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_dim_location[venue_category],
+    "Delivery Records", [Total Delivery Records],
+    "People Reached", [Total People Reached],
+    "Average Reach per Delivery", [Average People Reached per Delivery],
+    "Locations Reached", [Locations Reached]
+)
+ORDER BY
+    [Delivery Records] DESC,
+    [People Reached] DESC,
+    gold_dim_location[venue_category]
+
+
+// Optional check of detailed source venue types within each category.
+EVALUATE
+SUMMARIZECOLUMNS(
+    gold_dim_location[venue_category],
+    gold_dim_location[venue_type],
+    "Delivery Records", [Total Delivery Records],
+    "People Reached", [Total People Reached]
+)
+ORDER BY
+    gold_dim_location[venue_category],
+    [Delivery Records] DESC,
+    gold_dim_location[venue_type]
+
+
+// ================================================================
+// 12. ADDITIONAL OUTREACH CANDIDATES — BUSINESS QUESTION 12
+// ================================================================
+
+// Returns the ten lowest-reach suburbs represented in delivered activity.
+// These are indicators for review, not definitive evidence of community need.
+// External population, demographic, risk, and incident data would be required
+// for a complete outreach-needs assessment.
+EVALUATE
+TOPN(
+    10,
+    SUMMARIZECOLUMNS(
+        gold_dim_location[region],
+        gold_dim_location[suburb],
+        "Delivery Records", [Total Delivery Records],
+        "People Reached", [Total People Reached],
+        "Average Reach per Delivery", [Average People Reached per Delivery],
+        "Locations Reached", [Locations Reached]
+    ),
+    [People Reached], ASC,
+    [Delivery Records], ASC,
+    gold_dim_location[suburb], ASC
+)
+ORDER BY
+    [People Reached] ASC,
+    [Delivery Records] ASC,
+    gold_dim_location[suburb]

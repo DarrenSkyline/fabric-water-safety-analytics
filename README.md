@@ -2,32 +2,36 @@
 
 ## Project Overview
 
-This portfolio project demonstrates the development of an end-to-end analytics solution using Microsoft Fabric.
+This portfolio project demonstrates the development of an end-to-end community outreach analytics solution using Microsoft Fabric.
 
-The project uses synthetic community water safety outreach data to analyse programme delivery, participant attendance, regional coverage, language accessibility, and participant satisfaction.
+The project uses synthetic and anonymised community water-safety activity data to analyse programme delivery, participant reach, registration and attendance, regional coverage, language accessibility, venue usage, satisfaction, and educator contribution.
 
-The solution uses a Microsoft Fabric Lakehouse to store and manage data. Fabric notebooks with PySpark are used to ingest, clean, standardise, and validate the source data using a Medallion Architecture approach.
+The solution follows a Medallion Architecture:
 
-Raw CSV files are stored in OneLake and ingested into Bronze Delta tables. The Silver layer applies data type conversion, text standardisation, deduplication, and data quality validation to create analysis-ready datasets.
+- raw CSV files are stored in OneLake;
+- PySpark notebooks ingest the source data into Bronze Delta tables;
+- the Silver layer cleans, standardises, types, deduplicates, and validates the data;
+- the Gold layer creates an analytics-ready dimensional model;
+- the SQL analytics endpoint validates the Gold model against twelve business questions;
+- a Direct Lake semantic model provides relationships, business definitions, and reusable DAX measures for Power BI.
 
-The next stage of the project will create Gold analytical tables to support a Direct Lake semantic model and an interactive Power BI report.
-
-The planned solution includes:
+The current implementation includes:
 
 - Microsoft Fabric Workspace and Lakehouse
 - OneLake file storage
-- Bronze, Silver, and Gold data layers
-- Delta tables
-- Fabric notebooks
-- Python and PySpark data transformations
-- SQL validation queries
+- Bronze, Silver, and Gold Delta tables
+- Fabric notebooks using Python and PySpark
+- Data quality and referential-integrity checks
+- SQL analytics endpoint validation
 - A Direct Lake semantic model
-- DAX measures and measure metadata
-- A Power BI thin report
-- Data quality checks
-- Row-level security
+- A fact/dimension model with an event-educator bridge table
+- 15 reusable DAX measures organised into display folders
+- DAX validation queries
+- Technical documentation and validation screenshots
 
-> **Data disclaimer:** All data used in this project is synthetic and was created for learning and portfolio purposes. It does not contain confidential, personal, or organisational information.
+The next phase is to build a Power BI thin report on top of the semantic model.
+
+> **Data disclaimer:** All data used in this project is synthetic and anonymised for learning and portfolio purposes. It does not contain confidential, personal, or official organisational performance information.
 
 ## Solution Architecture
 
@@ -37,8 +41,23 @@ flowchart LR
     B --> C[Bronze Delta Tables]
     C --> D[Silver Delta Tables]
     D --> E[Gold Analytical Tables]
-    E --> F[Semantic Model]
-    F --> G[Power BI Dashboard]
+    E --> F[SQL Analytics Endpoint Validation]
+    E --> G[Direct Lake Semantic Model]
+    G --> H[DAX Measures]
+    H --> I[Power BI Thin Report]
+```
+
+## Repository Structure
+
+```text
+fabric-water-safety-analytics/
+├── data/                         Synthetic and anonymised CSV source data
+├── notebooks/                    Bronze, Silver, and Gold Fabric notebooks
+├── sql/                          Gold-layer SQL validation queries
+├── dax/                          DAX measure definitions and validation queries
+├── docs/                         Architecture and semantic-model documentation
+├── screenshots/                  Fabric model and validation evidence
+└── README.md
 ```
 
 ## Fabric Notebooks
@@ -47,11 +66,11 @@ flowchart LR
 
 [`01_load_bronze_data.ipynb`](notebooks/01_load_bronze_data.ipynb)
 
-- Defines explicit PySpark schemas
-- Reads raw CSV files from OneLake
+- Defines explicit PySpark source schemas
+- Reads four raw CSV files from OneLake
 - Adds ingestion metadata
 - Performs structural and relationship validation
-- Writes Bronze Delta tables
+- Writes four Bronze Delta tables
 
 ### 02 - Silver Data Cleaning and Transformation
 
@@ -61,27 +80,115 @@ flowchart LR
 - Converts strings into appropriate date, integer, double, and boolean types
 - Standardises categorical values
 - Removes duplicate records
-- Performs data quality and referential integrity checks
-- Writes analysis-ready Silver Delta tables
+- Performs data-quality and referential-integrity checks
+- Writes four analysis-ready Silver Delta tables
 
 ### 03 - Gold Analytical Data Model
 
 [`03_build_gold_tables.ipynb`](notebooks/03_build_gold_tables.ipynb)
 
-- Reads analysis-ready Silver Delta tables
-- Builds business-focused Gold tables based on the 12 business questions
-- Joins event, location, and educator data into analytical datasets
-- Creates pre-aggregated metrics for event performance, programme analysis, location analysis, educator activity, and monthly trends
-- Performs Gold-layer validation and data quality checks
-- Writes five analytics-ready Gold Delta tables for SQL analysis and Power BI
+- Reads the analysis-ready Silver Delta tables
+- Builds a business-focused dimensional model from the twelve business questions
+- Preserves both event-group and event-delivery grains
+- Creates a standardised location reporting category
+- Models the many-to-many event-educator relationship through a bridge table
+- Derives business-ready attendance, reach, satisfaction, duration, and delivery metrics
+- Performs Gold-layer validation
+- Writes five analytics-ready Gold Delta tables
+
+The Gold layer contains:
+
+| Table | Role | Grain |
+|---|---|---|
+| `gold_fact_event_delivery` | Central event-delivery fact | One row per `event_id` delivery record |
+| `gold_dim_date` | Calendar dimension | One row per date |
+| `gold_dim_location` | Location and venue dimension | One row per `location_id` |
+| `gold_dim_educator` | Anonymised educator dimension | One row per `educator_id` |
+| `gold_bridge_event_educator` | Staffing bridge | One row per event-educator assignment |
+
+## Semantic Model
+
+The **Water Safety Analytics Model** is a Direct Lake semantic model created from the five Gold tables.
+
+It uses four active, single-direction, one-to-many relationships:
+
+| One side | Many side | Filter direction |
+|---|---|---|
+| `gold_dim_date[date_key]` | `gold_fact_event_delivery[event_date_key]` | Date → Fact |
+| `gold_dim_location[location_id]` | `gold_fact_event_delivery[location_id]` | Location → Fact |
+| `gold_fact_event_delivery[event_id]` | `gold_bridge_event_educator[event_id]` | Fact → Bridge |
+| `gold_dim_educator[educator_id]` | `gold_bridge_event_educator[educator_id]` | Educator → Bridge |
+
+The date dimension is marked as the model date table. `month_name` is sorted by `month_number` so report visuals follow chronological rather than alphabetical order.
+
+The bridge table supports activities involving multiple educators or ambassadors. Educator analysis does not rely only on `lead_educator_id`, and event-level participant reach is not summed directly across educator assignments because that would cause double counting.
+
+![Semantic model relationships](screenshots/semantic-model-relationships.png)
+
+Detailed design decisions are documented in [`docs/semantic-model.md`](docs/semantic-model.md).
+
+## DAX Measures
+
+The semantic model contains 15 reusable measures organised into five display folders:
+
+| Display folder | Measures | Purpose |
+|---|---:|---|
+| `01 - Core KPIs` | 5 | Delivery records, event groups, reach, registration, and attendance |
+| `02 - Attendance` | 3 | Registration-applicable attendance, variance, and attendance rate |
+| `03 - Satisfaction` | 2 | Average satisfaction and rating coverage |
+| `04 - Educator` | 2 | Event deliveries and educator hours |
+| `05 - Time & Outreach` | 3 | Session hours, average reach, and locations served |
+
+Key modelling decisions include:
+
+- `Attendance Rate` uses a ratio of totals rather than an average of row-level ratios;
+- the attendance-rate numerator includes only deliveries with registration data;
+- satisfaction is presented as an event-delivery average because response counts are unavailable;
+- educator delivery counts are calculated through the bridge table;
+- `People Reached by Educator` is intentionally excluded until an explicit attribution rule is defined.
+
+Complete formulas and definitions are available in [`dax/measures.md`](dax/measures.md).
+
+## Validation
+
+Gold tables were validated with T-SQL through the Lakehouse SQL analytics endpoint. The semantic model was then independently validated with DAX queries.
+
+Reusable validation files:
+
+- [`sql/gold_business_validation.sql`](sql/gold_business_validation.sql)
+- [`dax/semantic_model_validation.dax`](dax/semantic_model_validation.dax)
+
+Known control totals:
+
+| Metric | Expected result |
+|---|---:|
+| Delivery records | 47 |
+| Event groups | 34 |
+| People reached | 3,565 |
+| Registered participants | 191 |
+| Registered-event attendance | 171 |
+| Attendance variance | -20 |
+| Attendance rate | 89.5% |
+| Locations reached | 27 |
+| Educators | 8 |
+| Event-educator assignments | 132 |
+| Events without educators | 0 |
+
+Validation evidence:
+
+![Core KPI DAX validation](screenshots/dax-core-kpi-validation.png)
+
+![Educator bridge DAX validation](screenshots/dax-educator-bridge-validation.png)
+
+The DAX validation script also checks monthly trends, regions, suburbs, programme types, delivery languages, venue categories, satisfaction by event type, educator contribution, and potential outreach candidates.
 
 ## Business Questions
 
 This project aims to answer the following business questions:
 
-1. How many community water safety events have been delivered?
+1. How many community water-safety events have been delivered?
 2. How many participants have been reached?
-3. How has event delivery and participation changed over time?
+3. How have event delivery and participation changed over time?
 4. Which regions and suburbs have the highest and lowest levels of participation?
 5. How does actual attendance compare with registered attendance across different event types?
 6. Which programme types reach the greatest number of participants?
@@ -94,31 +201,35 @@ This project aims to answer the following business questions:
 
 ## Project Status
 
-🚧 **In Progress — Phase 4: Semantic Model**
+🚧 **In Progress — Phase 5: Power BI Report**
 
 ### Completed
 
-- ✅ Defined business requirements and analytical questions
-- ✅ Created synthetic and anonymised source datasets
-- ✅ Created Microsoft Fabric workspace and Lakehouse
+- ✅ Defined twelve business questions
+- ✅ Created four synthetic and anonymised source datasets
+- ✅ Created a Microsoft Fabric workspace and Lakehouse
 - ✅ Loaded CSV source files into OneLake
-- ✅ Built Bronze Delta tables using PySpark
-- ✅ Implemented Bronze data validation
-- ✅ Built Silver Delta tables using PySpark
-- ✅ Implemented data type conversion and standardisation
-- ✅ Implemented Silver data quality and referential integrity checks
-- ✅ Built Gold dimensional model
-- ✅ Created event delivery fact table
-- ✅ Created date, location, and educator dimensions
-- ✅ Modelled event-to-educator many-to-many relationships
-- ✅ Added business-ready analytical metrics
-- ✅ Validated Gold tables using T-SQL
-- ✅ Validated business questions through the SQL Analytics Endpoint
+- ✅ Built and validated four Bronze Delta tables using PySpark
+- ✅ Built and validated four Silver Delta tables using PySpark
+- ✅ Implemented data typing, cleaning, standardisation, and deduplication
+- ✅ Implemented referential-integrity and data-quality checks
+- ✅ Built five Gold analytical tables
+- ✅ Created the event-delivery fact table and three dimensions
+- ✅ Modelled event-to-educator assignments with a bridge table
+- ✅ Validated the Gold model and twelve business questions with T-SQL
+- ✅ Created the Direct Lake semantic model
+- ✅ Configured four active, single-direction relationships
+- ✅ Marked and configured the date dimension
+- ✅ Created 15 reusable DAX measures in five display folders
+- ✅ Validated the semantic model with DAX Query View
+- ✅ Documented the semantic-model design and DAX measures
 
 ### Next Steps
 
-- ⏳ Create Direct Lake semantic model
-- ⏳ Define table relationships
-- ⏳ Create DAX measures and measure metadata
-- ⏳ Build Power BI dashboard
-- ⏳ Implement row-level security
+- ⏳ Hide technical keys and processing metadata from report view
+- ⏳ Build the Power BI thin report
+- ⏳ Create report pages for overview, attendance, outreach, programmes, and educators
+- ⏳ Reconcile report visuals with SQL and DAX validation results
+- ⏳ Add final dashboard screenshots and portfolio findings
+- ⏳ Implement and document row-level security
+
