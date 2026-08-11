@@ -56,12 +56,15 @@ ROW(
 EVALUATE
 ROW(
     "Events Without Educators",
+    COALESCE(
         COUNTROWS(
             EXCEPT(
-                VALUES(gold_fact_event_delivery[event_id]),
-                VALUES(gold_bridge_event_educator[event_id])
+                DISTINCT(gold_fact_event_delivery[event_id]),
+                DISTINCT(gold_bridge_event_educator[event_id])
             )
-        )
+        ),
+        0
+    )
 )
 
 

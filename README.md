@@ -26,6 +26,7 @@ The current implementation includes:
 - A Direct Lake semantic model
 - A fact/dimension model with an event-educator bridge table
 - 15 reusable DAX measures organised into display folders
+- A report-ready presentation layer with technical fields hidden
 - DAX validation queries
 - Technical documentation and validation screenshots
 
@@ -123,7 +124,20 @@ The date dimension is marked as the model date table. `month_name` is sorted by 
 
 The bridge table supports activities involving multiple educators or ambassadors. Educator analysis does not rely only on `lead_educator_id`, and event-level participant reach is not summed directly across educator assignments because that would cause double counting.
 
+
+
 ![Semantic model relationships](screenshots/semantic-model-relationships.png)
+
+Before report development, the semantic-model presentation layer was refined for business use:
+
+- technical keys, processing timestamps, and raw numeric fields were hidden from report view;
+- business-facing attributes were retained for filtering and visual analysis;
+- explicit measures were organised into five display folders;
+- `venue_name` and `educator_name` were configured as row labels;
+- the date dimension was marked as the model date table;
+- `month_name` was configured to sort by `month_number`.
+
+![Report-ready semantic model](screenshots/semantic-model-report-view.png)
 
 Detailed design decisions are documented in [`docs/semantic-model.md`](docs/semantic-model.md).
 
@@ -222,14 +236,15 @@ This project aims to answer the following business questions:
 - ✅ Marked and configured the date dimension
 - ✅ Created 15 reusable DAX measures in five display folders
 - ✅ Validated the semantic model with DAX Query View
+- ✅ Hid technical keys, processing metadata, and raw numeric fields from report view
+- ✅ Configured business row labels and report-facing model metadata
+- ✅ Documented the semantic-model design and DAX measures
 - ✅ Documented the semantic-model design and DAX measures
 
 ### Next Steps
 
-- ⏳ Hide technical keys and processing metadata from report view
 - ⏳ Build the Power BI thin report
 - ⏳ Create report pages for overview, attendance, outreach, programmes, and educators
 - ⏳ Reconcile report visuals with SQL and DAX validation results
 - ⏳ Add final dashboard screenshots and portfolio findings
 - ⏳ Implement and document row-level security
-
