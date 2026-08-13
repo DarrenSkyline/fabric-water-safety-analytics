@@ -28,9 +28,12 @@ The current implementation includes:
 - 15 reusable DAX measures organised into display folders
 - A report-ready presentation layer with technical fields hidden
 - DAX validation queries
+- A two-page interactive Power BI thin report
+- Executive Overview and Attendance & Satisfaction report pages
+- Interactive slicers and cross-filtering
 - Technical documentation and validation screenshots
 
-The next phase is to build a Power BI thin report on top of the semantic model.
+The current reporting phase includes two completed Power BI pages built as a thin report on top of the Direct Lake semantic model.
 
 > **Data disclaimer:** All data used in this project is synthetic and anonymised for learning and portfolio purposes. It does not contain confidential, personal, or official organisational performance information.
 
@@ -163,6 +166,54 @@ Key modelling decisions include:
 
 Complete formulas and definitions are available in [`dax/measures.md`](dax/measures.md).
 
+## Power BI Report
+
+The Power BI thin report uses the reusable measures and business-facing fields from the Direct Lake semantic model. The report currently contains two interactive pages with a consistent layout, shared visual design, and slicers for month, event type, and programme type.
+
+### Page 1 - Executive Overview
+
+The Executive Overview provides a high-level summary of delivery activity and community reach from February to July 2026.
+
+Headline KPIs:
+
+- 47 delivery records
+- 34 event groups
+- 3,565 people reached
+- 27 locations reached
+- 89.5% attendance rate
+
+Report visuals:
+
+- Monthly Deliveries and Community Reach
+- People Reached by Region
+- Community Reach by Programme Type
+- Interactive filtering by month, event type, and programme type
+
+![Power BI Executive Overview](screenshots/report-executive-overview.png)
+
+### Page 2 - Attendance & Satisfaction
+
+The Attendance & Satisfaction page focuses on registration-applicable events and participant feedback. Attendance measures use a consistent population: only delivery records containing registration data contribute to registered attendance and attendance-rate calculations.
+
+Headline KPIs:
+
+- 191 registered participants
+- 171 registered-event attendees
+- -20 attendance variance
+- 89.5% attendance rate
+- 4.64 average satisfaction
+
+Report visuals:
+
+- Monthly Registration and Attendance, including the monthly attendance-rate trend
+- Attendance Rate by Event Type
+- Satisfaction by Programme Type
+- Interactive filtering by month, event type, and programme type
+
+Programme types without satisfaction observations remain blank rather than being reported as zero. This preserves the distinction between missing feedback and an actual score of zero.
+
+![Power BI Attendance and Satisfaction](screenshots/report-attendance-satisfaction.png)
+
 ## Validation
 
 Gold tables were validated with T-SQL through the Lakehouse SQL analytics endpoint. The semantic model was then independently validated with DAX queries.
@@ -239,12 +290,15 @@ This project aims to answer the following business questions:
 - ✅ Hid technical keys, processing metadata, and raw numeric fields from report view
 - ✅ Configured business row labels and report-facing model metadata
 - ✅ Documented the semantic-model design and DAX measures
-- ✅ Documented the semantic-model design and DAX measures
+- ✅ Built the Executive Overview report page
+- ✅ Built the Attendance & Satisfaction report page
+- ✅ Added interactive slicers for month, event type, and programme type
+- ✅ Tested report filtering and cross-visual interactions
 
 ### Next Steps
 
-- ⏳ Build the Power BI thin report
-- ⏳ Create report pages for overview, attendance, outreach, programmes, and educators
 - ⏳ Reconcile report visuals with SQL and DAX validation results
-- ⏳ Add final dashboard screenshots and portfolio findings
+- ⏳ Export and add final report screenshots
+- ⏳ Document key portfolio findings and data-coverage limitations
+- ⏳ Consider additional report pages for outreach and educator analysis
 - ⏳ Implement and document row-level security
