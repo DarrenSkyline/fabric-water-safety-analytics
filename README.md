@@ -214,6 +214,16 @@ Programme types without satisfaction observations remain blank rather than being
 
 ![Power BI Attendance and Satisfaction](screenshots/report-attendance-satisfaction.png)
 
+## Key Findings
+
+- The project recorded 47 delivery records across 34 event groups, reaching 3,565 people in 27 locations.
+- Central Auckland had the highest community reach, with 2,233 people reached, accounting for approximately 62.6% of the total.
+- Water Safety Awareness was the dominant programme type, reaching 3,314 people, or approximately 93.0% of total community reach.
+- Registration-applicable deliveries recorded 171 attendees from 191 registrations, resulting in an overall attendance rate of 89.5% and a variance of -20 participants.
+- Training achieved the highest attendance rate at 94.4%, followed by Community Presentation at 91.2% and Presentation at 87.6%.
+- The average satisfaction score was 4.64 out of 5 across rated delivery records.
+- Satisfaction data was available for only two programme types. Unrated programme types remain blank rather than being interpreted as zero, highlighting a feedback-coverage limitation.
+
 ## Validation
 
 Gold tables were validated with T-SQL through the Lakehouse SQL analytics endpoint. The semantic model was then independently validated with DAX queries.
@@ -266,7 +276,7 @@ This project aims to answer the following business questions:
 
 ## Project Status
 
-🚧 **In Progress — Phase 5: Power BI Report**
+✅ **Complete — End-to-End Microsoft Fabric Analytics Portfolio Project**
 
 ### Completed
 
@@ -294,11 +304,14 @@ This project aims to answer the following business questions:
 - ✅ Built the Attendance & Satisfaction report page
 - ✅ Added interactive slicers for month, event type, and programme type
 - ✅ Tested report filtering and cross-visual interactions
+- ✅ Reconciled report KPIs and visuals with SQL and DAX control totals
+- ✅ Exported and documented the final report pages
+- ✅ Documented key analytical findings and data-coverage limitations
 
-### Next Steps
+### Optional Future Enhancements
 
-- ⏳ Reconcile report visuals with SQL and DAX validation results
-- ⏳ Export and add final report screenshots
-- ⏳ Document key portfolio findings and data-coverage limitations
-- ⏳ Consider additional report pages for outreach and educator analysis
-- ⏳ Implement and document row-level security
+- Add an Educator & Outreach page using the event-educator bridge model.
+- Extend satisfaction data collection to improve coverage across programme types.
+- Add drill-through to event-level delivery details.
+- Implement and document row-level security for role-based report access.
+- Introduce deployment pipelines or source-controlled Power BI Project (`.pbip`) files for report lifecycle management.
