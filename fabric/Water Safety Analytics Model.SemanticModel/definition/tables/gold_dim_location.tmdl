@@ -1,0 +1,111 @@
+table gold_dim_location
+	lineageTag: 2069ccc9-07c0-4f4d-905b-9e551dca9dcf
+	sourceLineageTag: [dbo].[gold_dim_location]
+
+	column location_id
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: b9c3d4be-d8a6-45ae-a126-2796b2fc74df
+		sourceLineageTag: location_id
+		summarizeBy: none
+		sourceColumn: location_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column venue_name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 778f29d9-e1e6-4186-9796-61fc8466f8b8
+		sourceLineageTag: venue_name
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: venue_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column suburb
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 87a83658-9b75-47b0-a06a-2d0a98d0c471
+		sourceLineageTag: suburb
+		summarizeBy: none
+		sourceColumn: suburb
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: fd5eba9a-4d02-4f60-b07a-b02918d38f5d
+		sourceLineageTag: region
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column venue_type
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 11e7627f-4315-4c4f-befb-7a1a9ca7167f
+		sourceLineageTag: venue_type
+		summarizeBy: none
+		sourceColumn: venue_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column venue_category
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 1b42e37a-0d81-4f53-9524-0858f4ae19a3
+		sourceLineageTag: venue_category
+		summarizeBy: none
+		sourceColumn: venue_category
+
+		annotation SummarizationSetBy = Automatic
+
+	column indoor_outdoor
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 0c50957a-3fc3-4f7e-9c15-b9ca93d71432
+		sourceLineageTag: indoor_outdoor
+		summarizeBy: none
+		sourceColumn: indoor_outdoor
+
+		annotation SummarizationSetBy = Automatic
+
+	column water_access
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 1f587592-4628-4ea6-a35c-d879d097a867
+		sourceLineageTag: water_access
+		summarizeBy: none
+		sourceColumn: water_access
+
+		annotation SummarizationSetBy = Automatic
+
+	column gold_processed_timestamp
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: 4aa75515-4448-485b-9c38-84bcae88c92a
+		sourceLineageTag: gold_processed_timestamp
+		summarizeBy: none
+		sourceColumn: gold_processed_timestamp
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition gold_dim_location = entity
+		mode: directLake
+		source
+			entityName: gold_dim_location
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

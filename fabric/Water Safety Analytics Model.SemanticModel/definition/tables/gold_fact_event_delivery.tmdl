@@ -1,0 +1,557 @@
+table gold_fact_event_delivery
+	lineageTag: cfd4aab5-3ae8-40a2-a7dd-35c67f186de4
+	sourceLineageTag: [dbo].[gold_fact_event_delivery]
+
+	measure 'Total Delivery Records' = SUM ( gold_fact_event_delivery[delivery_count] )
+		formatString: 0
+		displayFolder: 01 - Core KPIs
+		lineageTag: 808f577a-b7cb-4e87-9516-cc2162706ca2
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+	/// Distinct count of overall events or campaigns. Multi-day activities are counted once.
+	measure 'Total Event Groups' = DISTINCTCOUNT ( gold_fact_event_delivery[event_group_id] )
+		formatString: 0
+		displayFolder: 01 - Core KPIs
+		lineageTag: 36d7de02-d74e-43d8-ab41-aa7559ee7dc6
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+	measure 'Total People Reached' = SUM ( gold_fact_event_delivery[people_reached] )
+		formatString: #,0
+		displayFolder: 01 - Core KPIs
+		lineageTag: 946d4541-adc7-447d-b1a8-47b34f1573db
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = FormatString
+
+	measure 'Total Registered' = SUM ( gold_fact_event_delivery[registered_count] )
+		formatString: 0
+		displayFolder: 01 - Core KPIs
+		lineageTag: ac735fcd-5104-4e22-ace0-539164bc586f
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+	measure 'Total Attended' = SUM ( gold_fact_event_delivery[attended_count] )
+		formatString: 0
+		displayFolder: 01 - Core KPIs
+		lineageTag: 9adad899-88b7-4a71-a181-e495519697b1
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+	measure 'Registered Event Attended' =
+			
+			CALCULATE (
+			    [Total Attended],
+			    gold_fact_event_delivery[registered_count] <> BLANK()
+			)
+		formatString: 0
+		displayFolder: 02 - Attendance
+		lineageTag: 6caeb42e-c73f-4d90-89f0-619f57ec7b4a
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+	measure 'Attendance Variance' = [Registered Event Attended] - [Total Registered]
+		formatString: 0
+		displayFolder: 02 - Attendance
+		lineageTag: a756af40-b715-4b9c-89e7-d802c2fa103c
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+	measure 'Attendance Rate' =
+			
+			DIVIDE (
+			    [Registered Event Attended],
+			    [Total Registered]
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 - Attendance
+		lineageTag: 0462774c-5265-463a-827d-6b2576a28a0a
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		changedProperty = DisplayFolder
+
+	measure 'Average Satisfaction' =
+			
+			AVERAGE (
+			    gold_fact_event_delivery[satisfaction_score]
+			)
+		formatString: 0.00
+		displayFolder: 03 - Satisfaction
+		lineageTag: 2d0ce893-2e5f-4d86-a818-04924da615a8
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = FormatString
+
+	measure 'Rated Delivery Records' =
+			
+			CALCULATE (
+			    [Total Delivery Records],
+			    gold_fact_event_delivery[satisfaction_score] <> BLANK()
+			)
+		formatString: 0
+		displayFolder: 03 - Satisfaction
+		lineageTag: a866cef3-b456-4575-b551-891270738a10
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+	measure 'Total Session Hours' =
+			
+			SUM (
+			    gold_fact_event_delivery[session_duration_hours]
+			)
+		formatString: 0.0
+		displayFolder: 05 - Time & Outreach
+		lineageTag: 96f0f0e1-bcd5-4460-8610-a4552c46fcea
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = FormatString
+
+	measure 'Average People Reached per Delivery' =
+			
+			DIVIDE (
+			    [Total People Reached],
+			    [Total Delivery Records]
+			)
+		formatString: 0.0
+		displayFolder: 05 - Time & Outreach
+		lineageTag: 3899bb6c-7322-4bda-99be-04a3f2350df8
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = FormatString
+
+	measure 'Locations Reached' =
+			
+			DISTINCTCOUNT (
+			    gold_fact_event_delivery[location_id]
+			)
+		formatString: 0
+		displayFolder: 05 - Time & Outreach
+		lineageTag: 0d96264a-eaa1-4c7a-8a98-9407b2eae189
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+	column event_id
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: dc634ca5-2aa4-44ea-9dfd-426a0e694b14
+		sourceLineageTag: event_id
+		summarizeBy: none
+		sourceColumn: event_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_group_id
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: f320ca61-37cb-433b-b82c-52d3c77cd7e0
+		sourceLineageTag: event_group_id
+		summarizeBy: none
+		sourceColumn: event_group_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_date_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 14564b4a-9fc2-47a2-8277-0b7821322108
+		sourceLineageTag: event_date_key
+		summarizeBy: none
+		sourceColumn: event_date_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_date
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 1a9c6d83-1d50-4b59-abdc-7e543b830299
+		sourceLineageTag: event_date
+		summarizeBy: none
+		sourceColumn: event_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column location_id
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: f9233bf2-8b90-4ba2-be74-b988afa6d53f
+		sourceLineageTag: location_id
+		summarizeBy: none
+		sourceColumn: location_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column lead_educator_id
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: 07b8026e-3cbc-43a0-95c5-9491f9d734bc
+		sourceLineageTag: lead_educator_id
+		summarizeBy: none
+		sourceColumn: lead_educator_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: bbe4ec18-7ebf-4516-880e-66eedc6573ef
+		sourceLineageTag: event_name
+		summarizeBy: none
+		sourceColumn: event_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_type
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 3c2cb7b5-2e0b-47ec-a3dc-6bec3e372c46
+		sourceLineageTag: event_type
+		summarizeBy: none
+		sourceColumn: event_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column programme_type
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 60370692-6cfd-4910-b130-e9684a69cf59
+		sourceLineageTag: programme_type
+		summarizeBy: none
+		sourceColumn: programme_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivery_language
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: cde3de33-e5ba-488b-af16-d25fdae41ca9
+		sourceLineageTag: delivery_language
+		summarizeBy: none
+		sourceColumn: delivery_language
+
+		annotation SummarizationSetBy = Automatic
+
+	column audience_type
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 20cf43c2-9285-46ad-8a0b-04a520b91053
+		sourceLineageTag: audience_type
+		summarizeBy: none
+		sourceColumn: audience_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivery_format
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: bfa491f8-8055-4f24-a5e4-b6161c61e5ae
+		sourceLineageTag: delivery_format
+		summarizeBy: none
+		sourceColumn: delivery_format
+
+		annotation SummarizationSetBy = Automatic
+
+	column demonstration_type
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: ec666f47-e993-4748-bcd1-2d23aeabb1f9
+		sourceLineageTag: demonstration_type
+		summarizeBy: none
+		sourceColumn: demonstration_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column registration_required
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		sourceProviderType: bit
+		lineageTag: d68838de-c801-4ec8-8e1c-044ddb85f50d
+		sourceLineageTag: registration_required
+		summarizeBy: none
+		sourceColumn: registration_required
+
+		annotation SummarizationSetBy = Automatic
+
+	column registered_count
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 48176b23-c249-430a-aa0b-69b60859a58d
+		sourceLineageTag: registered_count
+		summarizeBy: sum
+		sourceColumn: registered_count
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column attended_count
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 7755e60f-9eef-4003-9e5f-b351944071cb
+		sourceLineageTag: attended_count
+		summarizeBy: sum
+		sourceColumn: attended_count
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column attendance_variance
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 0c35fd84-6e48-4e91-ab8c-2cc19c0253ce
+		sourceLineageTag: attendance_variance
+		summarizeBy: sum
+		sourceColumn: attendance_variance
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Percentage of registered participants who attended registration-applicable event deliveries. Calculated as registered-event attendance divided by total registrations.
+	column attendance_rate
+		dataType: double
+		isHidden
+		sourceProviderType: float
+		lineageTag: 1f0c2d6a-6d70-4130-9162-287999d44ee3
+		sourceLineageTag: attendance_rate
+		summarizeBy: sum
+		sourceColumn: attendance_rate
+
+		changedProperty = IsHidden
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column engaged_people_count
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 9e20f3be-fba2-42ab-8c5f-d15596bb99de
+		sourceLineageTag: engaged_people_count
+		summarizeBy: sum
+		sourceColumn: engaged_people_count
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column people_reached
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: cf388c3e-f53a-4078-ac2f-ed366ca57c84
+		sourceLineageTag: people_reached
+		summarizeBy: sum
+		sourceColumn: people_reached
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column engaged_boats_count
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: ecb6492a-99ec-42d7-9b3f-16e20a7c17b6
+		sourceLineageTag: engaged_boats_count
+		summarizeBy: sum
+		sourceColumn: engaged_boats_count
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column session_duration_minutes
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: ddeae9f0-545b-42cd-9775-502c4e8df604
+		sourceLineageTag: session_duration_minutes
+		summarizeBy: sum
+		sourceColumn: session_duration_minutes
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column session_duration_hours
+		dataType: double
+		isHidden
+		sourceProviderType: float
+		lineageTag: 057796dd-52a1-41fe-b57f-f6d2f29c8f24
+		sourceLineageTag: session_duration_hours
+		summarizeBy: sum
+		sourceColumn: session_duration_hours
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column satisfaction_score
+		dataType: double
+		isHidden
+		sourceProviderType: float
+		lineageTag: 0da5f09e-5125-4e39-8c5e-8d935a6ca0fc
+		sourceLineageTag: satisfaction_score
+		summarizeBy: sum
+		sourceColumn: satisfaction_score
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column engagement_level
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: bb675c1b-d48d-4151-a85c-768541c95266
+		sourceLineageTag: engagement_level
+		summarizeBy: none
+		sourceColumn: engagement_level
+
+		annotation SummarizationSetBy = Automatic
+
+	column weather_condition
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 32454570-0ae6-4cb4-9157-3a829834c5c0
+		sourceLineageTag: weather_condition
+		summarizeBy: none
+		sourceColumn: weather_condition
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_estimated
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		sourceProviderType: bit
+		lineageTag: 5f4c8dbc-b77a-480d-9e03-619c399f6037
+		sourceLineageTag: is_estimated
+		summarizeBy: none
+		sourceColumn: is_estimated
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_status
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: d92fcd91-d94e-4cb1-a600-73b9e1e2d260
+		sourceLineageTag: event_status
+		summarizeBy: none
+		sourceColumn: event_status
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivery_count
+		dataType: int64
+		isHidden
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: fb68fd0d-04b1-4302-ab8b-b5f3d5dec167
+		sourceLineageTag: delivery_count
+		summarizeBy: sum
+		sourceColumn: delivery_count
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column gold_processed_timestamp
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: bcc50d16-0568-4f53-8765-5fb11f6fb112
+		sourceLineageTag: gold_processed_timestamp
+		summarizeBy: none
+		sourceColumn: gold_processed_timestamp
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition gold_fact_event_delivery = entity
+		mode: directLake
+		source
+			entityName: gold_fact_event_delivery
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

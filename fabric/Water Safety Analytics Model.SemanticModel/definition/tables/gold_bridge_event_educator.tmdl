@@ -1,0 +1,123 @@
+table gold_bridge_event_educator
+	lineageTag: 62fa180d-d6bd-401c-a707-95945de1562c
+	sourceLineageTag: [dbo].[gold_bridge_event_educator]
+
+	/// Distinct count of event deliveries assigned to an educator through the event-educator bridge table.
+	measure 'Events Delivered by Educator' =
+			
+			DISTINCTCOUNT (
+			    gold_bridge_event_educator[event_id]
+			)
+		formatString: 0
+		displayFolder: 04 - Educator
+		lineageTag: 8b522862-2650-43e3-969a-4b44089c42c1
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+	measure 'Educator Hours' =
+			
+			SUM (
+			    gold_bridge_event_educator[hours_worked]
+			)
+		formatString: 0.0
+		displayFolder: 04 - Educator
+		lineageTag: 486b7b8b-f883-4fa0-b2f3-a010bf7ca968
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = FormatString
+
+	column event_id
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: e758bb27-6f4d-40ec-9ef5-302a06eb101a
+		sourceLineageTag: event_id
+		summarizeBy: none
+		sourceColumn: event_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column educator_id
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: 3fa2932e-146b-46c8-8f1b-60c0e99faec3
+		sourceLineageTag: educator_id
+		summarizeBy: none
+		sourceColumn: educator_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column educator_role
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 1abd95a1-a5cb-4f11-a6c0-c7691fd08690
+		sourceLineageTag: educator_role
+		summarizeBy: none
+		sourceColumn: educator_role
+
+		annotation SummarizationSetBy = Automatic
+
+	column hours_worked
+		dataType: double
+		isHidden
+		sourceProviderType: float
+		lineageTag: 3f61bbb3-4e24-4627-837e-97455f0c9139
+		sourceLineageTag: hours_worked
+		summarizeBy: sum
+		sourceColumn: hours_worked
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column is_estimated
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		sourceProviderType: bit
+		lineageTag: a33abf7e-951b-4873-abdb-2c8fb78f8f2a
+		sourceLineageTag: is_estimated
+		summarizeBy: none
+		sourceColumn: is_estimated
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column gold_processed_timestamp
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: 894d8b7f-7fb6-4213-a3fa-86a2dc9541cf
+		sourceLineageTag: gold_processed_timestamp
+		summarizeBy: none
+		sourceColumn: gold_processed_timestamp
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition gold_bridge_event_educator = entity
+		mode: directLake
+		source
+			entityName: gold_bridge_event_educator
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

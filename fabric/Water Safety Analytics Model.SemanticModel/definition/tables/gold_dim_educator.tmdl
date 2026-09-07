@@ -1,0 +1,91 @@
+table gold_dim_educator
+	lineageTag: 5b52d6aa-097b-41b0-a5a6-39787f6eda11
+	sourceLineageTag: [dbo].[gold_dim_educator]
+
+	column educator_id
+		dataType: string
+		isHidden
+		sourceProviderType: varchar(8000)
+		lineageTag: bdd39091-3cd7-4f02-98fd-d2cf76aed776
+		sourceLineageTag: educator_id
+		summarizeBy: none
+		sourceColumn: educator_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column educator_name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: ccc3e0f8-94cb-45a6-bdc0-dc69cd323078
+		sourceLineageTag: educator_name
+		summarizeBy: none
+		sourceColumn: educator_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column primary_language
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 5cc615f6-8506-44f5-825b-39e25cb47045
+		sourceLineageTag: primary_language
+		summarizeBy: none
+		sourceColumn: primary_language
+
+		annotation SummarizationSetBy = Automatic
+
+	column secondary_language
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 9549609e-6a01-438a-b211-3a29a9e3e8ca
+		sourceLineageTag: secondary_language
+		summarizeBy: none
+		sourceColumn: secondary_language
+
+		annotation SummarizationSetBy = Automatic
+
+	column experience_level
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: c75f848e-631b-4cf4-b16d-6cdad72b8221
+		sourceLineageTag: experience_level
+		summarizeBy: none
+		sourceColumn: experience_level
+
+		annotation SummarizationSetBy = Automatic
+
+	column active_status
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		sourceProviderType: bit
+		lineageTag: 52afab36-eccf-48a7-a8ab-cb800b3a27cd
+		sourceLineageTag: active_status
+		summarizeBy: none
+		sourceColumn: active_status
+
+		annotation SummarizationSetBy = Automatic
+
+	column gold_processed_timestamp
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: 612d8e4e-2ece-4243-9a75-bf304849326c
+		sourceLineageTag: gold_processed_timestamp
+		summarizeBy: none
+		sourceColumn: gold_processed_timestamp
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition gold_dim_educator = entity
+		mode: directLake
+		source
+			entityName: gold_dim_educator
+			schemaName: dbo
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

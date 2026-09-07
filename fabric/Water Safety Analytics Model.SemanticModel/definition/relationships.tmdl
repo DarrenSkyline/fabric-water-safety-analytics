@@ -1,0 +1,16 @@
+relationship 6b2ccd3e-e371-fcd7-23c6-d977c28d12e9
+	fromColumn: gold_fact_event_delivery.event_date_key
+	toColumn: gold_dim_date.date_key
+
+relationship b1721ece-cb35-ff31-1813-eead7d266bfa
+	fromColumn: gold_fact_event_delivery.location_id
+	toColumn: gold_dim_location.location_id
+
+relationship 4779ae2a-fef1-d7db-f17a-5a58eaa1570e
+	fromColumn: gold_bridge_event_educator.educator_id
+	toColumn: gold_dim_educator.educator_id
+
+relationship e9a2e9b0-3344-592b-1a95-12004b068183
+	fromColumn: gold_bridge_event_educator.event_id
+	toColumn: gold_fact_event_delivery.event_id
+

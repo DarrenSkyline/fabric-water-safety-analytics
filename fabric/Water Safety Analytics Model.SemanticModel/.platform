@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Water Safety Analytics Model"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "89f333fe-0f4d-afde-438f-6d6354bc553e"
+  }
+}
